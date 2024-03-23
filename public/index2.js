@@ -147,7 +147,7 @@ function showAdditionalScoreText(additionalScore) {
 
 // Function to increment the required presses after each successful harvest
 function incrementRequiredPresses() {
-    requiredPresses++;
+    requiredPresses+=2;
 }
 
 // Function to check if enough presses have been made to harvest
@@ -174,9 +174,11 @@ function handleSpacebarPress(event) {
         const numApples = Math.floor(Math.random() * 6) + 5;
         drawFallenApples(numApples);
         setTimeout(createApples, 1000);
+        updateProgressBar();
     } else {
         // Increment the current presses
         currentPresses++;
+        updateProgressBar();
     }
 }
 
@@ -239,3 +241,12 @@ function handleKeyEvents(event) {
     handleSpacebarPress(event);
     handleEnterKey(event);
 }
+
+// Function to update the progress bar based on current presses and required presses
+function updateProgressBar() {
+    var progressBar = document.getElementById("progress-bar");
+    var progressBarContainer = document.getElementById("progress-bar-container");
+    var containerHeight = progressBarContainer.clientHeight;
+    var currentHeight = (currentPresses / (requiredPresses+1)) * containerHeight;
+    progressBar.style.height = currentHeight + "px";
+}    

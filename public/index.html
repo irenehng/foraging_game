@@ -126,6 +126,21 @@
     #next {
       text-align: center;
     }
+
+    #progress-bar-container {
+      position: absolute;
+      top: 15%;
+      right: 30px;
+      width: 12px;
+      height: 70%;
+      background-color: white;
+      border: 1px solid black;
+    }
+
+    #progress-bar {
+    height: 0;
+    background-color: green;
+}
   </style>
 </head>
 
@@ -184,6 +199,9 @@
         <!-- Additional score display -->
         <div class="score">Score: <span id="scoreValue">0</span></div>
         <div id="additionalScore"></div>
+        <div id="progress-bar-container">
+          <div id="progress-bar"></div>
+        </div>
     </div>
   </div>
   <div id="next" , style="display:none">
