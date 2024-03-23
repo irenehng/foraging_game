@@ -19,10 +19,10 @@ var fileName;
 // }
 
 // Setting up firebase variables//
-const firestore = firebase.firestore(); // (a.k.a.) db
-const firebasestorage = firebase.storage();
-const subjectcollection = firestore.collection("Subjects");
-const trialcollection = firestore.collection("Trials");
+// const firestore = firebase.firestore(); // (a.k.a.) db
+// const firebasestorage = firebase.storage();
+// const subjectcollection = firestore.collection("Subjects");
+// const trialcollection = firestore.collection("Trials");
 
 // Function to switch between HTML pages
 function show(shown, hidden) {
@@ -36,6 +36,11 @@ function show(shown, hidden) {
 var init_dur = 0 ;
 const delay_add = 0.5;
 const max_runs = 10;
+var long_travel = 3;
+var short_travel = 1;
+var num_trials = 20;
+var trialCount = 0;
+var score = 0;
 // from https://stackoverflow.com/questions/29205294/how-to-achieve-blinking-effect-in-svg
 
 var svgNS = "http://www.w3.org/2000/svg"; 
@@ -131,6 +136,35 @@ function removeApples(){
 	}
 }
 
+function drawFallenApples(numApples) {
+    var fallenApplesSVG = document.getElementById("FallenApples");
+	for (var i = 0; i < numApples; i++) {
+		var radius = 1.5;
+		var x = Math.random() * 120; // Random x-coordinate within the SVG
+		var y = Math.random() * 20 + 48; // Random y-coordinate below the tree
+		var circle = document.createElementNS(svgNS, "circle");
+		circle.setAttribute("cx", x);
+		circle.setAttribute("cy", y);
+		circle.setAttribute("r", radius);
+		circle.setAttribute("fill", "red");
+		fallenApplesSVG.appendChild(circle);
+    }
+}
+
+function updateScoreDisplay(){
+	document.getElementById("scoreValue").innerText = score;
+}
+
+function showAdditionalScoreText(additionalScore) {
+    const additionalScoreElement = document.getElementById('additionalScore');
+    additionalScoreElement.textContent = `+${additionalScore}`;
+    additionalScoreElement.style.display = 'block'; // Show the additional score text
+
+    // Hide the additional score text after 2 seconds
+    setTimeout(() => {
+        additionalScoreElement.style.display = 'none';
+    }, 2000);
+	}
 
 function monitorBasket(dur){
 	console.log("curr del = " + dur*1000)
@@ -140,25 +174,73 @@ function monitorBasket(dur){
 			var appleContainer = document.getElementById("Apples");
 			console.log(appleContainer.firstChild);
 			document.addEventListener("keypress", function(event){
-		    if (event.keyCode == 32 && appleContainer.firstChild){
-		   		// shapeElement.setAttribute("fill","black");
-				console.log(appleContainer.firstChild);
-				removeApples();
-				dur += delay_add;
-				monitorBasket(dur);
-				console.log("Inside event listener");
-				console.log("delay = " + dur);
-			}
-		});
+				if (event.key === " " && appleContainer.firstChild){
+					// shapeElement.setAttribute("fill","black");
+					additionalScore = Math.floor(Math.random() * 3) + 9;
+					score += additionalScore;
+					removeApples();
+					showAdditionalScoreText(additionalScore);
+					updateScoreDisplay();
+					init_dur += delay_add;
+					monitorBasket(init_dur);
+					console.log("Inside event listener");
+					console.log("delay = " + init_dur);
+					// Draw a random number of fallen apples (5 to 10)
+					const numApples = Math.floor(Math.random() * 6) + 5;
+					drawFallenApples(numApples);
+				}
+			});
 	}, dur*1000);
 }
 
-
-function runTrialLogic(){
-	show('blinking', 'container-instructions1');
-	removeApples();
-	createTree();
-	monitorBasket(init_dur);
-	return false;
+function chooseTravelTime(){
+	return Math.random() < 0.5 ? long_travel : short_travel;
 }
 
+function clearFallenApples() {
+	var fallenApplesSVG = document.getElementById("FallenApples");
+    while (fallenApplesSVG.firstChild) {
+        fallenApplesSVG.removeChild(fallenApplesSVG.firstChild);
+    }
+    fallenApples = [];
+	}
+
+
+function resetTrial(travelTime) {
+	score = 0;
+	removeApples();
+	clearFallenApples();
+	show('next', 'blinking')
+
+	document.getElementById("next").style.display = "block";
+
+	setTimeout(function() {
+			document.getElementById("next").style.display = "none";
+			show('blinking', 'next');
+			if (trialCount < num_trials){
+				createTree();
+			}
+	}, travelTime * 1000);
+
+	if (trialCount < num_trials){
+		updateScoreDisplay();
+		createTree();
+		monitorBasket(init_dur);
+	}
+}
+
+function handleEnterKey(event) {
+    if (event.key === "Enter") {
+        init_dur = 0; // Reset init_dur to 0
+        console.log("init_dur:", init_dur);
+        resetTrial(chooseTravelTime()); // Start a new trial
+				trialCount++;
+    }
+}
+
+function runTrialLogic() {
+    show('blinking', 'container-instructions1');
+    resetTrial(0);
+    document.addEventListener("keypress", handleEnterKey);
+    return false;
+}
