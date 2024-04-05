@@ -109,16 +109,24 @@ function removeApples(){
 
 function drawFallenApples(numApples) {
     var fallenApplesSVG = document.getElementById("FallenApples");
-	for (var i = 0; i < numApples; i++) {
-		var radius = 1.5;
-		var x = Math.random() * 120; // Random x-coordinate within the SVG
-		var y = Math.random() * 20 + 48; // Random y-coordinate below the tree
-		var circle = document.createElementNS(svgNS, "circle");
-		circle.setAttribute("cx", x);
-		circle.setAttribute("cy", y);
-		circle.setAttribute("r", radius);
-		circle.setAttribute("fill", "red");
-		fallenApplesSVG.appendChild(circle);
+    var trunkCenterX = 75;
+    var trunkCenterY = 50;
+    var maxDistance = 50;
+
+    for (var i = 0; i < numApples; i++) {
+        var appleRadius = 1.5;
+        var angle = Math.random() * Math.PI; // Random angle (0 to PI, to ensure below the tree)
+        var distance = Math.random() * maxDistance; // Random distance within the maximum distance
+        var x = trunkCenterX + distance * Math.cos(angle); // Calculate x-coordinate
+        var y = trunkCenterY + distance * Math.sin(angle); // Calculate y-coordinate
+
+        var circle = document.createElementNS(svgNS, "circle");
+        circle.setAttribute("cx", x);
+        circle.setAttribute("cy", y);
+        circle.setAttribute("r", appleRadius);
+        circle.setAttribute("fill", "red");
+
+        fallenApplesSVG.appendChild(circle);
     }
 }
 
@@ -247,6 +255,6 @@ function updateProgressBar() {
     var progressBar = document.getElementById("progress-bar");
     var progressBarContainer = document.getElementById("progress-bar-container");
     var containerHeight = progressBarContainer.clientHeight;
-    var currentHeight = (currentPresses / (requiredPresses+1)) * containerHeight;
+    var currentHeight = (1 - (currentPresses / (requiredPresses + 1))) * containerHeight;
     progressBar.style.height = currentHeight + "px";
 }    
