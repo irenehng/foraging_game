@@ -5,6 +5,12 @@ function show(shown, hidden) {
     return false;
 }
 
+//variables to record:
+//1. number of apples harvested, or if varying, substitute with number of harvests/trial
+//2. time per trial (which is time spent per tree)
+//3. number of key presses/trial
+
+
 // Important variables for coding
 var long_travel = 3;
 var short_travel = 1;
@@ -193,6 +199,8 @@ function handleSpacebarPress(event) {
 // Function to reset the trial
 function resetTrial(travelTime) {
     score = 0;
+    requiredPresses = 1;
+    currentPresses = 0;
     removeApples();
     clearFallenApples();
     show('next', 'blinking');
