@@ -173,7 +173,7 @@ function handleSpacebarPress(event) {
         // Harvest the apple
         additionalScore = Math.floor(Math.random() * 3) + 9;
         score += additionalScore;
-        removeApples();
+        removeApples();   
         showAdditionalScoreText(additionalScore);
         updateScoreDisplay();
         incrementRequiredPresses(); // Increase required presses for next harvest
@@ -255,6 +255,10 @@ function updateProgressBar() {
     var progressBar = document.getElementById("progress-bar");
     var progressBarContainer = document.getElementById("progress-bar-container");
     var containerHeight = progressBarContainer.clientHeight;
-    var currentHeight = (1 - (currentPresses / (requiredPresses + 1))) * containerHeight;
+    var containerTop = progressBarContainer.getBoundingClientRect().top;
+    var currentHeight = currentPresses / requiredPresses * containerHeight;
+    var currentTop = containerHeight - currentHeight;
+    console.log(currentTop);
+    progressBar.style.top = currentTop + "px";
     progressBar.style.height = currentHeight + "px";
 }    
