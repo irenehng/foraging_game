@@ -177,21 +177,20 @@ function checkPresses() {
 function handleSpacebarPress(event) {
     if (event.key === " ") {
         currentPresses++;
-        console.log(checkPresses());
         if (checkPresses()) {
             // Harvest the apple
-        additionalScore = Math.floor(Math.random() * 3) + 9;
-        score += additionalScore;
-        removeApples();   
-        showAdditionalScoreText(additionalScore);
-        updateScoreDisplay();
-        // Draw a random number of fallen apples (5 to 10)
-        const numApples = Math.floor(Math.random() * 6) + 5;
-        drawFallenApples(numApples);
-        setTimeout(createApples, 1000);
-        updateProgressBar();
-        incrementRequiredPresses(); // Increase required presses for next harvest
-        currentPresses = 0; // Reset current presses
+            additionalScore = Math.floor(Math.random() * 3) + 9;
+            score += additionalScore;
+            removeApples();   
+            showAdditionalScoreText(additionalScore);
+            updateScoreDisplay();
+            // Draw a random number of fallen apples (5 to 10)
+            const numApples = Math.floor(Math.random() * 6) + 5;
+            drawFallenApples(numApples);
+            setTimeout(createApples, 1000);
+            updateProgressBar();
+            incrementRequiredPresses(); // Increase required presses for next harvest
+            currentPresses = 0; // Reset current presses
         } else {
             updateProgressBar();
         }
@@ -277,5 +276,9 @@ function updateProgressBar() {
 function resetProgressBar() {
     var progressBar = document.getElementById("progress-bar");
     progressBar.style.height = "0px";
-    console.log(progressBar.style.height);
+    var resetText = document.getElementById("reset-instruction");
+    resetText.textContent = "You can now harvest again!"
+    setTimeout(function() {
+        resetText.textContent = "";
+    }, 1000);
 }
