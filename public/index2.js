@@ -175,26 +175,27 @@ function checkPresses() {
 
 // Function to handle spacebar press
 function handleSpacebarPress(event) {
-    if (event.key === " " && checkPresses()) {
-        // Harvest the apple
+    if (event.key === " ") {
+        currentPresses++;
+        console.log(checkPresses());
+        if (checkPresses()) {
+            // Harvest the apple
         additionalScore = Math.floor(Math.random() * 3) + 9;
         score += additionalScore;
         removeApples();   
         showAdditionalScoreText(additionalScore);
         updateScoreDisplay();
-        incrementRequiredPresses(); // Increase required presses for next harvest
-        currentPresses = 0; // Reset current presses
         // Draw a random number of fallen apples (5 to 10)
         const numApples = Math.floor(Math.random() * 6) + 5;
         drawFallenApples(numApples);
         setTimeout(createApples, 1000);
         updateProgressBar();
-    } else {
-        // Increment the current presses
-        currentPresses++;
-        updateProgressBar();
-    }
-}
+        incrementRequiredPresses(); // Increase required presses for next harvest
+        currentPresses = 0; // Reset current presses
+        } else {
+            updateProgressBar();
+        }
+}}
 
 // Function to reset the trial
 function resetTrial(travelTime) {
@@ -263,10 +264,18 @@ function updateProgressBar() {
     var progressBar = document.getElementById("progress-bar");
     var progressBarContainer = document.getElementById("progress-bar-container");
     var containerHeight = progressBarContainer.clientHeight;
-    var containerTop = progressBarContainer.getBoundingClientRect().top;
     var currentHeight = currentPresses / requiredPresses * containerHeight;
     var currentTop = containerHeight - currentHeight;
-    console.log(currentTop);
     progressBar.style.top = currentTop + "px";
     progressBar.style.height = currentHeight + "px";
+    if (currentPresses == requiredPresses) {
+       setTimeout(resetProgressBar, 1000);
+    }
 }    
+
+//function to reset progress bar
+function resetProgressBar() {
+    var progressBar = document.getElementById("progress-bar");
+    progressBar.style.height = "0px";
+    console.log(progressBar.style.height);
+}
