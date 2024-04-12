@@ -1,28 +1,28 @@
-/*
-Skeleton of the basic foraging task
+console.log("index.js loaded")
 
-Remember to update necessary fields before starting the game. All fields that require change will be marked by a "**TODO**" comment.
-*/
+// // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// // TODO: Add SDKs for Firebase products that you want to use
+// // https://firebase.google.com/docs/web/setup#available-libraries
 
-// Set to 'true' if you wish to only test the front-end (will not access databases)
-// **TODO** Make sure this is set to false before deploying!
-const noSave = true;
+// // Your web app's Firebase configuration
+// // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyDyeb8xZ2uA6jZxaukBxTo0XWEWGyrOALQ",
+  authDomain: "foraging-game-4b625.firebaseapp.com",
+  databaseURL: "https://foraging-game-4b625-default-rtdb.firebaseio.com",
+  projectId: "foraging-game-4b625",
+  storageBucket: "foraging-game-4b625.appspot.com",
+  messagingSenderId: "548525895337",
+  appId: "1:548525895337:web:bc17cbdb856ec96638c3b8",
+  measurementId: "G-DZ2577L4CE"
+};
 
+// // Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 
-var fileName;
-
-/* TEMPORARY USE OF ORIGINAL CODE TO TEST THINGS OUT */
-// try {
-//     let app = firebase.app();
-// } catch (e) {
-//     console.error(e);
-// }
-
-// Setting up firebase variables//
-// const firestore = firebase.firestore(); // (a.k.a.) db
-// const firebasestorage = firebase.storage();
-// const subjectcollection = firestore.collection("Subjects");
-// const trialcollection = firestore.collection("Trials");
 
 // Function to switch between HTML pages
 function show(shown, hidden) {
@@ -31,21 +31,25 @@ function show(shown, hidden) {
     return false;
 }
 
-// Important variables for coding
+//variables to record:
+//1. number of apples harvested, or if varying, substitute with number of harvests/trial
+//2. time per trial (which is time spent per tree)
+//3. number of key presses/trial
 
-var init_dur = 0 ;
-const delay_add = 0.5;
-const max_runs = 10;
+
+// Important variables for coding
 var long_travel = 3;
 var short_travel = 1;
 var num_trials = 20;
 var trialCount = 0;
 var score = 0;
-// from https://stackoverflow.com/questions/29205294/how-to-achieve-blinking-effect-in-svg
+var requiredPresses = 1; // Number of space bar presses required to harvest
+var currentPresses = 0; // Current number of presses
 
 var svgNS = "http://www.w3.org/2000/svg"; 
 const svgCanvas = document.getElementById("basket_svg");
 const shapeElement = document.getElementById("basket");
+
 
 function createApples(){
 	appleDiv = document.getElementById("Apples");
@@ -128,7 +132,6 @@ function createTree(){
 }
 
 
-
 function removeApples(){
 	var appleContainer = document.getElementById("Apples");
 	while (appleContainer.firstChild){
@@ -138,18 +141,34 @@ function removeApples(){
 
 function drawFallenApples(numApples) {
     var fallenApplesSVG = document.getElementById("FallenApples");
-	for (var i = 0; i < numApples; i++) {
-		var radius = 1.5;
-		var x = Math.random() * 120; // Random x-coordinate within the SVG
-		var y = Math.random() * 20 + 48; // Random y-coordinate below the tree
-		var circle = document.createElementNS(svgNS, "circle");
-		circle.setAttribute("cx", x);
-		circle.setAttribute("cy", y);
-		circle.setAttribute("r", radius);
-		circle.setAttribute("fill", "red");
-		fallenApplesSVG.appendChild(circle);
+    var trunkCenterX = 75;
+    var trunkCenterY = 50;
+    var maxDistance = 50;
+
+    for (var i = 0; i < numApples; i++) {
+        var appleRadius = 1.5;
+        var angle = Math.random() * Math.PI; // Random angle (0 to PI, to ensure below the tree)
+        var distance = Math.random() * maxDistance; // Random distance within the maximum distance
+        var x = trunkCenterX + distance * Math.cos(angle); // Calculate x-coordinate
+        var y = trunkCenterY + distance * Math.sin(angle); // Calculate y-coordinate
+
+        var circle = document.createElementNS(svgNS, "circle");
+        circle.setAttribute("cx", x);
+        circle.setAttribute("cy", y);
+        circle.setAttribute("r", appleRadius);
+        circle.setAttribute("fill", "red");
+
+        fallenApplesSVG.appendChild(circle);
     }
 }
+
+function clearFallenApples() {
+	var fallenApplesSVG = document.getElementById("FallenApples");
+    while (fallenApplesSVG.firstChild) {
+        fallenApplesSVG.removeChild(fallenApplesSVG.firstChild);
+    }
+    fallenApples = [];
+	}
 
 function updateScoreDisplay(){
 	document.getElementById("scoreValue").innerText = score;
@@ -166,81 +185,127 @@ function showAdditionalScoreText(additionalScore) {
     }, 2000);
 	}
 
-function monitorBasket(dur){
-	console.log("curr del = " + dur*1000)
-	setTimeout(function(){
-			// shapeElement.setAttribute("fill","green");
-			createApples();
-			var appleContainer = document.getElementById("Apples");
-			console.log(appleContainer.firstChild);
-			document.addEventListener("keypress", function(event){
-				if (event.key === " " && appleContainer.firstChild){
-					// shapeElement.setAttribute("fill","black");
-					additionalScore = Math.floor(Math.random() * 3) + 9;
-					score += additionalScore;
-					removeApples();
-					showAdditionalScoreText(additionalScore);
-					updateScoreDisplay();
-					init_dur += delay_add;
-					monitorBasket(init_dur);
-					console.log("Inside event listener");
-					console.log("delay = " + init_dur);
-					// Draw a random number of fallen apples (5 to 10)
-					const numApples = Math.floor(Math.random() * 6) + 5;
-					drawFallenApples(numApples);
-				}
-			});
-	}, dur*1000);
+// Function to increment the required presses after each successful harvest
+function incrementRequiredPresses() {
+    requiredPresses+=2;
 }
 
-function chooseTravelTime(){
-	return Math.random() < 0.5 ? long_travel : short_travel;
-}
-
-function clearFallenApples() {
-	var fallenApplesSVG = document.getElementById("FallenApples");
-    while (fallenApplesSVG.firstChild) {
-        fallenApplesSVG.removeChild(fallenApplesSVG.firstChild);
+// Function to check if enough presses have been made to harvest
+function checkPresses() {
+    if (currentPresses >= requiredPresses) {
+        return true;
+    } else {
+        return false;
     }
-    fallenApples = [];
-	}
-
-
-function resetTrial(travelTime) {
-	score = 0;
-	removeApples();
-	clearFallenApples();
-	show('next', 'blinking')
-
-	document.getElementById("next").style.display = "block";
-
-	setTimeout(function() {
-			document.getElementById("next").style.display = "none";
-			show('blinking', 'next');
-			if (trialCount < num_trials){
-				createTree();
-			}
-	}, travelTime * 1000);
-
-	if (trialCount < num_trials){
-		updateScoreDisplay();
-		createTree();
-		monitorBasket(init_dur);
-	}
 }
 
+// Function to handle spacebar press
+function handleSpacebarPress(event) {
+    if (event.key === " ") {
+        currentPresses++;
+        if (checkPresses()) {
+            // Harvest the apple
+            additionalScore = Math.floor(Math.random() * 3) + 9;
+            score += additionalScore;
+            removeApples();   
+            showAdditionalScoreText(additionalScore);
+            updateScoreDisplay();
+            // Draw a random number of fallen apples (5 to 10)
+            const numApples = Math.floor(Math.random() * 6) + 5;
+            drawFallenApples(numApples);
+            setTimeout(createApples, 1000);
+            updateProgressBar();
+            incrementRequiredPresses(); // Increase required presses for next harvest
+            currentPresses = 0; // Reset current presses
+        } else {
+            updateProgressBar();
+        }
+}}
+
+// Function to reset the trial
+function resetTrial(travelTime) {
+    score = 0;
+    requiredPresses = 1;
+    currentPresses = 0;
+    removeApples();
+    clearFallenApples();
+    show('next', 'blinking');
+
+    document.getElementById("next").style.display = "block";
+
+    setTimeout(function() {
+        document.getElementById("next").style.display = "none";
+        show('blinking', 'next');
+        if (trialCount < num_trials) {
+            createTree();
+        }
+    }, travelTime * 1000);
+
+    if (trialCount < num_trials) {
+        updateScoreDisplay();
+        createTree();
+        monitorBasket();
+    }
+}
+
+// Function to monitor the basket
+function monitorBasket() {
+    // Create apples immediately
+    createApples();
+    var appleContainer = document.getElementById("Apples");
+    console.log(appleContainer.firstChild);
+    document.addEventListener("keypress", handleKeyEvents);
+}
+
+// Function to handle Enter key press
 function handleEnterKey(event) {
     if (event.key === "Enter") {
-        init_dur = 0; // Reset init_dur to 0
-        console.log("init_dur:", init_dur);
         resetTrial(chooseTravelTime()); // Start a new trial
-				trialCount++;
+        trialCount++;
     }
 }
 
+// Function to choose travel time
+function chooseTravelTime() {
+    return Math.random() < 0.5 ? long_travel : short_travel;
+}
+
+// Function to run the trial logic
 function runTrialLogic() {
+    console.log('start trial')
     show('blinking', 'container-instructions1');
     resetTrial(0);
-    document.addEventListener("keypress", handleEnterKey);
+    document.addEventListener("keypress", handleKeyEvents);
     return false;
+}
+
+// Function to handle key events
+function handleKeyEvents(event) {
+    handleSpacebarPress(event);
+    handleEnterKey(event);
+}
+
+// Function to update the progress bar based on current presses and required presses
+function updateProgressBar() {
+    var progressBar = document.getElementById("progress-bar");
+    var progressBarContainer = document.getElementById("progress-bar-container");
+    var containerHeight = progressBarContainer.clientHeight;
+    var currentHeight = currentPresses / requiredPresses * containerHeight;
+    var currentTop = containerHeight - currentHeight;
+    progressBar.style.top = currentTop + "px";
+    progressBar.style.height = currentHeight + "px";
+    if (currentPresses == requiredPresses) {
+       setTimeout(resetProgressBar, 1000);
+    }
+}    
+
+//function to reset progress bar
+function resetProgressBar() {
+    var progressBar = document.getElementById("progress-bar");
+    progressBar.style.height = "0px";
+    var resetText = document.getElementById("reset-instruction");
+    resetText.textContent = "You can now harvest again!"
+    setTimeout(function() {
+        resetText.textContent = "";
+    }, 1000);
 }
