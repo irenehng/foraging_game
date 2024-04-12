@@ -1,27 +1,28 @@
 console.log("index.js loaded")
 
 // // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+// import { initializeApp } from "firebase/app";
+// import { getAnalytics } from "firebase/analytics";
+// import {} from "firebase/firestore"
 // // TODO: Add SDKs for Firebase products that you want to use
 // // https://firebase.google.com/docs/web/setup#available-libraries
 
 // // Your web app's Firebase configuration
 // // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyDyeb8xZ2uA6jZxaukBxTo0XWEWGyrOALQ",
-  authDomain: "foraging-game-4b625.firebaseapp.com",
-  databaseURL: "https://foraging-game-4b625-default-rtdb.firebaseio.com",
-  projectId: "foraging-game-4b625",
-  storageBucket: "foraging-game-4b625.appspot.com",
-  messagingSenderId: "548525895337",
-  appId: "1:548525895337:web:bc17cbdb856ec96638c3b8",
-  measurementId: "G-DZ2577L4CE"
-};
+// const firebaseConfig = {
+//   apiKey: "AIzaSyDyeb8xZ2uA6jZxaukBxTo0XWEWGyrOALQ",
+//   authDomain: "foraging-game-4b625.firebaseapp.com",
+//   databaseURL: "https://foraging-game-4b625-default-rtdb.firebaseio.com",
+//   projectId: "foraging-game-4b625",
+//   storageBucket: "foraging-game-4b625.appspot.com",
+//   messagingSenderId: "548525895337",
+//   appId: "1:548525895337:web:bc17cbdb856ec96638c3b8",
+//   measurementId: "G-DZ2577L4CE"
+// };
 
-// // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+// // // Initialize Firebase
+// const app = initializeApp(firebaseConfig);
+// const analytics = getAnalytics(app);
 
 
 // Function to switch between HTML pages
