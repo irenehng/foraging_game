@@ -1,27 +1,27 @@
 console.log("index.js loaded")
-
 // // Import the functions you need from the SDKs you need
-// import { initializeApp } from "firebase/app";
-// import { getAnalytics } from "firebase/analytics";
+// import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+// // import { getAnalytics } from "firebase/analytics";
 // // TODO: Add SDKs for Firebase products that you want to use
 // // https://firebase.google.com/docs/web/setup#available-libraries
 
 // // Your web app's Firebase configuration
 // // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-// const firebaseConfig = {
-//   apiKey: "AIzaSyDyeb8xZ2uA6jZxaukBxTo0XWEWGyrOALQ",
-//   authDomain: "foraging-game-4b625.firebaseapp.com",
-//   databaseURL: "https://foraging-game-4b625-default-rtdb.firebaseio.com",
-//   projectId: "foraging-game-4b625",
-//   storageBucket: "foraging-game-4b625.appspot.com",
-//   messagingSenderId: "548525895337",
-//   appId: "1:548525895337:web:bc17cbdb856ec96638c3b8",
-//   measurementId: "G-DZ2577L4CE"
-// };
+const firebaseConfig = {
+  apiKey: "AIzaSyDyeb8xZ2uA6jZxaukBxTo0XWEWGyrOALQ",
+  authDomain: "foraging-game-4b625.firebaseapp.com",
+  databaseURL: "https://foraging-game-4b625-default-rtdb.firebaseio.com",
+  projectId: "foraging-game-4b625",
+  storageBucket: "foraging-game-4b625.appspot.com",
+  messagingSenderId: "548525895337",
+  appId: "1:548525895337:web:bc17cbdb856ec96638c3b8",
+  measurementId: "G-DZ2577L4CE"
+};
 
-// Initialize Firebase
-// const app = initializeApp(firebaseConfig);
-// const analytics = getAnalytics(app);
+const app = firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+console.log(db)
+
 
 // Function to switch between HTML pages
 function show(shown, hidden) {
@@ -29,7 +29,6 @@ function show(shown, hidden) {
     document.getElementById(hidden).style.display = 'none';
     return false;
 }
-
 //variables to record:
 //1. number of apples harvested, or if varying, substitute with number of harvests/trial
 //2. time per trial (which is time spent per tree)
@@ -166,7 +165,7 @@ function clearFallenApples() {
     while (fallenApplesSVG.firstChild) {
         fallenApplesSVG.removeChild(fallenApplesSVG.firstChild);
     }
-    fallenApples = [];
+    // fallenApples = [];
 	}
 
 function updateScoreDisplay(){
@@ -277,6 +276,9 @@ function runTrialLogic() {
     document.addEventListener("keypress", handleKeyEvents);
     return false;
 }
+
+const runTrialButton = document.getElementById("runTrialButton");
+runTrialButton.addEventListener("click", runTrialLogic);
 
 // Function to handle key events
 function handleKeyEvents(event) {
