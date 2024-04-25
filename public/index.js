@@ -1,3 +1,5 @@
+
+
 console.log("index.js loaded")
 // // Import the functions you need from the SDKs you need
 // import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
@@ -30,9 +32,10 @@ function show(shown, hidden) {
     return false;
 }
 //variables to record:
-//1. number of apples harvested, or if varying, substitute with number of harvests/trial
+//1. number of apples harvested, or if varying, substitute with number of harvests/tree
 //2. time per trial (which is time spent per tree)
 //3. number of key presses/trial
+//4. timing of apples appearing & each key press
 
 
 // Important variables for coding
@@ -43,13 +46,42 @@ var trialCount = 0;
 var score = 0;
 var requiredPresses = 1; // Number of space bar presses required to harvest
 var currentPresses = 0; // Current number of presses
-
 var svgNS = "http://www.w3.org/2000/svg"; 
 const svgCanvas = document.getElementById("basket_svg");
 const shapeElement = document.getElementById("basket");
 
+//gameState variables
+var gameState = 0;
+var NEWTREE = 0;
+var SHOWAPPLES = 1;
+var IDLE = 2;
+var PRESS =3;
+var HARVEST = 4;
+var END = 5;
+
+function logGameState() {
+    setInterval(() => {
+        console.log('Game state: ', gameState);
+        // Get the current timestamp
+        const timestamp = firebase.firestore.FieldValue.serverTimestamp();
+        // Add gameState to Firestore
+        db.collection('gameStateLog').add({
+            state: gameState,
+            timestamp: timestamp
+        }).then(docRef => {
+            console.log('Game state logged with ID: ', docRef.id);
+        }).catch(error => {
+            console.error('Error logging game state: ', error);
+        });
+    }, 200);
+}
+logGameState();
 
 function createApples(){
+    gameState = SHOWAPPLES;
+    setTimeout(function(){
+        gameState = IDLE;
+    },500);
 	appleDiv = document.getElementById("Apples");
 	
 		if (!appleDiv.firstChild){
@@ -202,6 +234,7 @@ function handleSpacebarPress(event) {
     if (event.key === " ") {
         currentPresses++;
         if (checkPresses()) {
+            gameState = HARVEST;
             // Harvest the apple
             additionalScore = Math.floor(Math.random() * 3) + 9;
             score += additionalScore;
@@ -216,6 +249,10 @@ function handleSpacebarPress(event) {
             incrementRequiredPresses(); // Increase required presses for next harvest
             currentPresses = 0; // Reset current presses
         } else {
+            gameState = PRESS;
+            setTimeout(()=>{
+                gameState = IDLE;
+            },500)
             updateProgressBar();
         }
 }}
@@ -225,6 +262,7 @@ function resetTrial(travelTime) {
     score = 0;
     requiredPresses = 1;
     currentPresses = 0;
+    gameState = NEWTREE;
     removeApples();
     clearFallenApples();
     show('next', 'blinking');
@@ -243,6 +281,8 @@ function resetTrial(travelTime) {
         updateScoreDisplay();
         createTree();
         monitorBasket();
+    } else {
+        gameState = END;
     }
 }
 
