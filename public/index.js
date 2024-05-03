@@ -1,12 +1,4 @@
 
-
-console.log("index.js loaded")
-// // Import the functions you need from the SDKs you need
-// import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-// // import { getAnalytics } from "firebase/analytics";
-// // TODO: Add SDKs for Firebase products that you want to use
-// // https://firebase.google.com/docs/web/setup#available-libraries
-
 // // Your web app's Firebase configuration
 // // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
@@ -22,7 +14,8 @@ const firebaseConfig = {
 
 const app = firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-console.log(db)
+db.settings({ignoreUndefinedProperties: true});
+console.log(db);
 
 
 // Function to switch between HTML pages
@@ -31,11 +24,6 @@ function show(shown, hidden) {
     document.getElementById(hidden).style.display = 'none';
     return false;
 }
-//variables to record:
-//1. number of apples harvested, or if varying, substitute with number of harvests/tree
-//2. time per trial (which is time spent per tree)
-//3. number of key presses/trial
-//4. timing of apples appearing & each key press
 
 
 // Important variables for coding
@@ -50,29 +38,31 @@ var svgNS = "http://www.w3.org/2000/svg";
 const svgCanvas = document.getElementById("basket_svg");
 const shapeElement = document.getElementById("basket");
 
+
 //gameState variables
 var gameState = 0;
 var NEWTREE = 0;
 var SHOWAPPLES = 1;
 var IDLE = 2;
-var PRESS =3;
+var PRESS = 3;
 var HARVEST = 4;
 var END = 5;
 
+var trialData = {
+    id: 0, //replace with participant ID
+    blockType: "block1", //replace with block type
+    trialNumber: trialCount,
+    stateList: {},
+};
+
+//function to continuously log game state
 function logGameState() {
     setInterval(() => {
-        console.log('Game state: ', gameState);
         // Get the current timestamp
-        const timestamp = firebase.firestore.FieldValue.serverTimestamp();
-        // Add gameState to Firestore
-        db.collection('gameStateLog').add({
-            state: gameState,
-            timestamp: timestamp
-        }).then(docRef => {
-            console.log('Game state logged with ID: ', docRef.id);
-        }).catch(error => {
-            console.error('Error logging game state: ', error);
-        });
+        const timestamp = new Date().toISOString();
+        // Append gameState and timestamp to trialData.stateList
+        trialData.stateList[timestamp] = gameState;
+        console.log(trialData.stateList);
     }, 200);
 }
 logGameState();
@@ -229,6 +219,78 @@ function checkPresses() {
     }
 }
 
+// Function to reset the trial
+function resetTrial(travelTime) {
+    score = 0;
+    requiredPresses = 1;
+    currentPresses = 0;
+    gameState = NEWTREE;
+    removeApples();
+    clearFallenApples();
+    show('next', 'blinking');
+
+    document.getElementById("next").style.display = "block";
+
+    setTimeout(function() {
+        document.getElementById("next").style.display = "none";
+        show('blinking', 'next');
+        if (trialCount < num_trials) {
+            createTree();
+        }
+    }, travelTime * 1000);
+
+    if (trialCount < num_trials) {
+        updateScoreDisplay();
+        createTree();
+        createApples();
+        document.addEventListener("keypress", handleKeyEvents);
+    } else {
+        gameState = END;
+    }
+}
+
+// Function to choose travel time (currently randomly chosen to be short 50% of the time and long 50% of the time)
+function chooseTravelTime() {
+    return Math.random() < 0.5 ? long_travel : short_travel;
+}
+
+// Function to run the trial logic
+function runTrialLogic() {
+    console.log('start trial')
+    show('blinking', 'container-instructions1');
+    resetTrial(0);
+    document.addEventListener("keypress", handleKeyEvents);
+    return false;
+}
+
+const runTrialButton = document.getElementById("runTrialButton");
+runTrialButton.addEventListener("click", runTrialLogic);
+
+// Function to handle key events
+function handleKeyEvents(event) {
+    handleSpacebarPress(event);
+    handleEnterKey(event);
+}
+
+// Function to handle Enter key press
+function handleEnterKey(event) {
+    if (event.key === "Enter") {
+        resetTrial(chooseTravelTime()); // Start a new trial
+        trialCount++;
+        trialData.trialNumber = trialCount;
+        // Push trialData.stateList to Firestore
+        if (trialCount > 0) {
+            db.collection('trial_log').add(trialData).then(docRef => {
+            console.log('Trial data logged with ID: ', docRef.id);
+            }).catch(error => {
+            console.error('Error logging trial data: ', error);
+            });
+        }
+        // Clear trialData.stateList for the next trial
+        trialData.stateList = [];
+    }
+}
+
 // Function to handle spacebar press
 function handleSpacebarPress(event) {
     if (event.key === " ") {
@@ -256,75 +318,6 @@ function handleSpacebarPress(event) {
             updateProgressBar();
         }
 }}
-
-// Function to reset the trial
-function resetTrial(travelTime) {
-    score = 0;
-    requiredPresses = 1;
-    currentPresses = 0;
-    gameState = NEWTREE;
-    removeApples();
-    clearFallenApples();
-    show('next', 'blinking');
-
-    document.getElementById("next").style.display = "block";
-
-    setTimeout(function() {
-        document.getElementById("next").style.display = "none";
-        show('blinking', 'next');
-        if (trialCount < num_trials) {
-            createTree();
-        }
-    }, travelTime * 1000);
-
-    if (trialCount < num_trials) {
-        updateScoreDisplay();
-        createTree();
-        monitorBasket();
-    } else {
-        gameState = END;
-    }
-}
-
-// Function to monitor the basket
-function monitorBasket() {
-    // Create apples immediately
-    createApples();
-    var appleContainer = document.getElementById("Apples");
-    console.log(appleContainer.firstChild);
-    document.addEventListener("keypress", handleKeyEvents);
-}
-
-// Function to handle Enter key press
-function handleEnterKey(event) {
-    if (event.key === "Enter") {
-        resetTrial(chooseTravelTime()); // Start a new trial
-        trialCount++;
-    }
-}
-
-// Function to choose travel time
-function chooseTravelTime() {
-    return Math.random() < 0.5 ? long_travel : short_travel;
-}
-
-// Function to run the trial logic
-function runTrialLogic() {
-    console.log('start trial')
-    show('blinking', 'container-instructions1');
-    resetTrial(0);
-    document.addEventListener("keypress", handleKeyEvents);
-    return false;
-}
-
-const runTrialButton = document.getElementById("runTrialButton");
-runTrialButton.addEventListener("click", runTrialLogic);
-
-// Function to handle key events
-function handleKeyEvents(event) {
-    handleSpacebarPress(event);
-    handleEnterKey(event);
-}
 
 // Function to update the progress bar based on current presses and required presses
 function updateProgressBar() {
